@@ -51,9 +51,9 @@ class PoolQueryWorker:
 
             if len(od) <= 2:
                 start_dp = time.time()
-                sys.stderr.write('Taxon {} cannot be placed. At least three non-infinity distances '
-                                'should be observed to place a taxon. '
-                                'Consequently, this taxon is ignored (no output).\n'.format(query_name))
+                # sys.stderr.write('Taxon {} cannot be placed. At least three non-infinity distances '
+                                # 'should be observed to place a taxon. '
+                                # 'Consequently, this taxon is ignored (no output).\n'.format(query_name))
                 jplace[j]["placements"][0]["p"][0][0] = -1
                 end_dp = time.time() - start_dp
                 logging.info(
@@ -64,10 +64,14 @@ class PoolQueryWorker:
                 continue
 
             start_dp = time.time()
+            flag = False
             for k, v in od.items():
                 if v == 0 and k != query_name:
                     jplace[j]["placements"][0]["p"][0][0] = cls.name_to_node_map[k].edge_index
-                    continue
+                    flag = True
+                    break
+            if flag:
+                continue
 
             subtree = Subtree(od, cls.name_to_node_map)
 
