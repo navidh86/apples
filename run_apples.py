@@ -15,6 +15,11 @@ import time
 import logging
 import pickle
 
+from apples.support.Bootstrapping import Bootstrapping
+import numpy as np
+
+find_support = True
+sample_count = 100
 
 if __name__ == "__main__":
     mp.set_start_method('fork')
@@ -70,6 +75,17 @@ if __name__ == "__main__":
                     time.strftime("%H:%M:%S"), (time.time() - start)))
 
         reference.set_baseobs(options.base_observation_threshold)
+        sequence_length = len(reference.representatives[0][0])
+        if find_support:
+            boot = Bootstrapping.getBootMatrix(sample_count, sequence_length)
+            Bootstrapping.find_support = True
+        else:
+            boot = np.ones((1, sequence_length))
+            Bootstrapping.boot = boot
+            Bootstrapping.boot2.append(boot)
+        
+        print(Bootstrapping.boot.shape)
+
         start = time.time()
         if options.query_fp:
             query_dict = fasta2dic(options.query_fp, options.protein_seqs, options.mask_lowconfidence)
@@ -101,7 +117,7 @@ if __name__ == "__main__":
     result = join_jplace(results)
     result["tree"] = extended_newick_string
     result["metadata"] = {"invocation": " ".join(sys.argv)}
-    result["fields"] = ["edge_num", "likelihood", "like_weight_ratio", "distal_length", "pendant_length"]
+    result["fields"] = ["edge_num", "likelihood", "like_weight_ratio", "distal_length", "pendant_length", "support"]
     result["version"] = 3
 
     if options.output_fp:
