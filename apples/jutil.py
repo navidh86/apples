@@ -1,5 +1,5 @@
 
-def join_jplace(lst):
+def join_jplace_old(lst):
     result = lst[0]
     if len(lst) == 1:
         if result["placements"][0]["p"][0][0] == -1:
@@ -8,6 +8,17 @@ def join_jplace(lst):
         for i in range(1,len(lst)):
             if lst[i]["placements"][0]["p"][0][0] != -1:
                 result["placements"] = result["placements"] + lst[i]["placements"]
+    return result
+
+def join_jplace(lst):
+    result = lst[0][0]
+    if len(lst) == 1:
+        if result["placements"][0]["p"][0][0] == -1:
+            result["placements"] = []
+    else:
+        for i in range(1,len(lst)):
+            if lst[i][0]["placements"][0]["p"][0][0] != -1:
+                result["placements"] = result["placements"] + lst[i][0]["placements"]
     return result
 
 def extended_newick(tree):
