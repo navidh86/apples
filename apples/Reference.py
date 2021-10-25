@@ -117,7 +117,8 @@ class ReducedReference(Reference):
 
         for j, rd in enumerate(representative_dists):
             obs_dist[j] = {} 
-
+            obs_num = 0
+            
             heapq.heapify(rd)
             while rd:
                 head = heapq.heappop(rd)
