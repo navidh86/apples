@@ -11,6 +11,8 @@ import time
 import logging
 import multiprocessing as mp
 
+from apples.support.Bootstrapping import Bootstrapping
+
 
 class Reference(ABC):
     """prot flag true if protein sequences, false for nucleotide sequences"""
@@ -75,27 +77,59 @@ class ReducedReference(Reference):
         self.baseobs = baseobs
 
 
+    # def get_obs_dist_old(self, query_seq, query_tag):
+    #     obs_dist = {}
+    #     obs_num = 0
+    #     representative_dists = []
+    #     for i, content in enumerate(self.representatives):
+    #         consensus_seq, group = content  
+    #         dist = self.dist_function(query_seq, consensus_seq)
+    #         if dist >= 0: # valid distance
+    #             representative_dists.append((dist, i))
+    #     heapq.heapify(representative_dists)
+    #     while representative_dists:
+    #         head = heapq.heappop(representative_dists)
+    #         if head[0] <= self.threshold or obs_num < self.baseobs:
+    #             _, group = self.representatives[head[1]]
+    #             for thing in group:
+    #                 thing_d = self.dist_function(query_seq, self.refs[thing])
+    #                 if not thing_d < 0:
+    #                     obs_dist[thing] = thing_d
+    #                     obs_num += 1
+    #         else:
+    #             break
+    #     # for k,v in obs_dist.items():
+    #     #    print(k+"\t"+str(v))
+    #     return obs_dist
+
     def get_obs_dist(self, query_seq, query_tag):
         obs_dist = {}
         obs_num = 0
-        representative_dists = []
+        representative_dists = [[] for x in range(Bootstrapping.sample_count+1)]
+
         for i, content in enumerate(self.representatives):
             consensus_seq, group = content  
-            dist = self.dist_function(query_seq, consensus_seq)
-            if dist >= 0: # valid distance
-                representative_dists.append((dist, i))
-        heapq.heapify(representative_dists)
-        while representative_dists:
-            head = heapq.heappop(representative_dists)
-            if head[0] <= self.threshold or obs_num < self.baseobs:
-                _, group = self.representatives[head[1]]
-                for thing in group:
-                    thing_d = self.dist_function(query_seq, self.refs[thing])
-                    if not thing_d < 0:
-                        obs_dist[thing] = thing_d
-                        obs_num += 1
-            else:
-                break
+            dist = self.dist_function(query_seq, consensus_seq, Bootstrapping.boot) # vector of distances
+
+            for j in range(Bootstrapping.sample_count+1):
+                if dist[j] >= 0: # valid distance
+                    representative_dists[j].append((dist[j], i))
+
+        for j, rd in enumerate(representative_dists):
+            obs_dist[j] = {} 
+
+            heapq.heapify(rd)
+            while rd:
+                head = heapq.heappop(rd)
+                if head[0] <= self.threshold or obs_num < self.baseobs:
+                    _, group = self.representatives[head[1]]
+                    for thing in group:
+                        thing_d = self.dist_function(query_seq, self.refs[thing], Bootstrapping.boot2[j])[0]
+                        if not thing_d < 0:
+                            obs_dist[j][thing] = thing_d
+                            obs_num += 1
+                else:
+                    break
         # for k,v in obs_dist.items():
         #    print(k+"\t"+str(v))
         return obs_dist
