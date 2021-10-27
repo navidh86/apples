@@ -5,7 +5,7 @@ from apples.fasta2dic import fasta2dic
 from apples.Reference import ReducedReference
 from apples.OptionsRun import options_config
 import multiprocessing as mp
-from apples.jutil import join_jplace
+from apples.jutil import join_jplace, join_jplace_support
 import sys
 import json
 from sys import platform as _platform
@@ -18,8 +18,6 @@ import pickle
 from apples.support.Bootstrapping import Bootstrapping
 import numpy as np
 
-find_support = True
-sample_count = 100
 
 if __name__ == "__main__":
     mp.set_start_method('fork')
@@ -75,16 +73,9 @@ if __name__ == "__main__":
                     time.strftime("%H:%M:%S"), (time.time() - start)))
 
         reference.set_baseobs(options.base_observation_threshold)
-        sequence_length = len(reference.representatives[0][0])
-        if find_support:
-            boot = Bootstrapping.getBootMatrix(sample_count, sequence_length)
-            Bootstrapping.find_support = True
-        else:
-            boot = np.ones((1, sequence_length))
-            Bootstrapping.boot = boot
-            Bootstrapping.boot2.append(boot)
         
-        print(Bootstrapping.boot.shape)
+        if options.find_support:
+            Bootstrapping.sample_count = options.sample_count
 
         start = time.time()
         if options.query_fp:
@@ -104,20 +95,35 @@ if __name__ == "__main__":
     startq = time.time()
     queryworker = PoolQueryWorker()
     queryworker.set_class_attributes(reference, options, name_to_node_map)
+
+    if not options.find_support:
+        query_function = queryworker.runquery
+    else:
+        boot = Bootstrapping.getBootMatrix(options.sample_count, len(reference.representatives[0][0]))
+        if options.fast_support:
+            query_function = queryworker.runquery_support_fast
+        else:
+            query_function = queryworker.runquery_support_fast
+
     if _platform == "win32" or _platform == "win64" or _platform == "msys":
         # if windows, multithreading is not supported until either
         # processes can be forked in windows or apples works with spawn.
-        results = list(map(lambda a: queryworker.runquery(a[0], *a[1:]), queries))   # a.k.a starmap
+        results = list(map(lambda a: query_function(a[0], *a[1:]), queries))   # a.k.a starmap
     else:
         pool = mp.Pool(options.num_thread)
-        results = pool.starmap(queryworker.runquery, queries)
+        results = pool.starmap(query_function, queries)
     logging.info(
         "[%s] Processed all queries in %.3f seconds." % (time.strftime("%H:%M:%S"), (time.time() - startq)))
 
-    result = join_jplace(results)
+    if not options.find_support:
+        result = join_jplace(results)
+    else:
+        result = join_jplace_support(results)
     result["tree"] = extended_newick_string
     result["metadata"] = {"invocation": " ".join(sys.argv)}
-    result["fields"] = ["edge_num", "likelihood", "like_weight_ratio", "distal_length", "pendant_length", "support"]
+    result["fields"] = ["edge_num", "likelihood", "like_weight_ratio", "distal_length", "pendant_length"]
+    if options.find_support:
+        result["fields"].append("support")
     result["version"] = 3
 
     if options.output_fp:

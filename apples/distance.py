@@ -88,7 +88,7 @@ def scoredist(a2, b2):
     return cd
 
 
-def jc69_old(a2, b2):
+def jc69(a2, b2):
     nondash = np.logical_and(a2 != b'-', b2 != b'-')
     valid = np.count_nonzero(nondash)
     if not valid or valid / len(nondash) < 0.001:
@@ -103,7 +103,7 @@ def jc69_old(a2, b2):
         else:
             return -0.75 * np.log(loc)
 
-def jc69(a2, b2, boot):    
+def jc69_support(a2, b2, boot):    
     nondash = np.logical_and(a2 != b'-', b2 != b'-')
     valid = np.dot(boot, nondash)
     prop = valid / len(a2)

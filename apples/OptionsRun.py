@@ -66,5 +66,7 @@ def options_config():
 
         if options.sample_count <= 0:
             raise ValueError('Sample count has to be a positive integer.')
+    else:
+        options.fast_support = False
 
     return options, args

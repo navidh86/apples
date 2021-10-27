@@ -4,6 +4,7 @@ class Bootstrapping:
     boot = [] # the 2d matrix
     boot2 = [] # 3d version of the same matrix
     sample_count = 0
+    sequence_length = 0
 
     @classmethod
     def getBootMatrix(cls, sample_count, sequence_length):
