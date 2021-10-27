@@ -38,6 +38,7 @@ if __name__ == "__main__":
                 time.strftime("%H:%M:%S"), (time.time() - start)))
 
     if options.tree_fp:
+        orig_tree_fp = options.tree_fp
         first_read_tree, name_to_node_map, extended_newick_string = prepareTree(options)
 
     if options.dist_fp:
@@ -96,14 +97,13 @@ if __name__ == "__main__":
     queryworker = PoolQueryWorker()
     queryworker.set_class_attributes(reference, options, name_to_node_map)
 
-    if not options.find_support:
+    if not options.fast_support:
         query_function = queryworker.runquery
+        # if options.find_support:
+        #     Bootstrapping.sample_count = options.sample_count
     else:
         boot = Bootstrapping.getBootMatrix(options.sample_count, len(reference.representatives[0][0]))
-        if options.fast_support:
-            query_function = queryworker.runquery_support_fast
-        else:
-            query_function = queryworker.runquery_support_fast
+        query_function = queryworker.runquery_support_fast
 
     if _platform == "win32" or _platform == "win64" or _platform == "msys":
         # if windows, multithreading is not supported until either
@@ -118,6 +118,9 @@ if __name__ == "__main__":
     if not options.find_support:
         result = join_jplace(results)
     else:
+        if not options.fast_support:
+            results = Bootstrapping.performSlowBootstrapping(orig_tree_fp, reference.refs, query_dict, options.sample_count, len(reference.representatives[0][0]),results)
+
         result = join_jplace_support(results)
     result["tree"] = extended_newick_string
     result["metadata"] = {"invocation": " ".join(sys.argv)}
