@@ -5,6 +5,7 @@ class Bootstrapping:
     boot2 = [] # 3d version of the same matrix
     sample_count = 0
     sequence_length = 0
+    np.random.seed(56)
 
     @classmethod
     def getBootMatrix(cls, sample_count, sequence_length):
