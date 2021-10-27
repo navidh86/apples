@@ -51,26 +51,29 @@ class PoolQueryWorker:
 
             if len(od) <= 2:
                 start_dp = time.time()
-                # sys.stderr.write('Taxon {} cannot be placed. At least three non-infinity distances '
-                                # 'should be observed to place a taxon. '
-                                # 'Consequently, this taxon is ignored (no output).\n'.format(query_name))
                 jplace[j]["placements"][0]["p"][0][0] = -1
                 end_dp = time.time() - start_dp
-                logging.info(
-                    "[%s] Distances are computed for query %s in %.3f seconds.\n"
-                    "[%s] Dynamic programming is completed for query %s in %.3f seconds." %
-                    (time.strftime("%H:%M:%S"), query_name, end_dist,
-                    time.strftime("%H:%M:%S"), query_name, end_dp))
+
+                if j == 0:
+                    sys.stderr.write('Taxon {} cannot be placed. At least three non-infinity distances '
+                                    'should be observed to place a taxon. '
+                                    'Consequently, this taxon is ignored (no output).\n'.format(query_name))
+
+                    logging.info(
+                        "[%s] Distances are computed for query %s in %.3f seconds.\n"
+                        "[%s] Dynamic programming is completed for query %s in %.3f seconds." %
+                        (time.strftime("%H:%M:%S"), query_name, end_dist,
+                        time.strftime("%H:%M:%S"), query_name, end_dp))
                 continue
 
             start_dp = time.time()
-            flag = False
+            placement_flag = False
             for k, v in od.items():
                 if v == 0 and k != query_name:
                     jplace[j]["placements"][0]["p"][0][0] = cls.name_to_node_map[k].edge_index
-                    flag = True
+                    placement_flag = True
                     break
-            if flag:
+            if placement_flag:
                 continue
 
             subtree = Subtree(od, cls.name_to_node_map)
@@ -88,17 +91,18 @@ class PoolQueryWorker:
             alg.placement_per_edge(cls.options.negative_branch)
             presult, potential_misplacement_flag = alg.placement(cls.options.criterion_name)
             jplace[j]["placements"][0]["p"] = [presult]
-            if potential_misplacement_flag == 1:
+            if potential_misplacement_flag == 1 and j == 0:
                 logging.warning(
                     "Best placement for query sequence %s has zero pendant edge length and placed at an internal node "
                     "with a non-zero least squares error. This is a potential misplacement." % query_name)
             subtree.unroll_changes()
 
             end_dp = time.time() - start_dp
-            logging.info(
-                "[%s] Distances are computed for query %s in %.3f seconds.\n"
-                "[%s] Dynamic programming is completed for query %s in %.3f seconds." %
-                (time.strftime("%H:%M:%S"), query_name, end_dist,
-                time.strftime("%H:%M:%S"), query_name, end_dp))
+            if j == 0:
+                logging.info(
+                    "[%s] Distances are computed for query %s in %.3f seconds.\n"
+                    "[%s] Dynamic programming is completed for query %s in %.3f seconds." %
+                    (time.strftime("%H:%M:%S"), query_name, end_dist,
+                    time.strftime("%H:%M:%S"), query_name, end_dp))
 
         return jplace
