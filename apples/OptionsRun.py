@@ -27,6 +27,13 @@ def options_config():
     parser.add_option("-X", "--mask", dest="mask_lowconfidence", action='store_true', default=False,
                       help="masks low confidence characters in the alignments indicated by lowercase characters "
                            "output by softwares like SEPP.")
+    parser.add_option("-S", "--support", dest="find_support", action='store_true', default=False,
+                      help="adds support value for the placed queries.")                    
+    parser.add_option("-F", "--fast", dest="fast_support", action='store_true', default=False,
+                      help="enables fast bootstrapping (True by default if reestimation is turned off).")                    
+    parser.add_option("-N", "--sample", dest="sample_count", type=int, default=100,
+                      help="number of bootstrapping samples.", metavar="NUMBER")                    
+
 
     (options, args) = parser.parse()
 
@@ -49,5 +56,15 @@ def options_config():
         raise ValueError('No input backbone tree provided by user.')
     if options.query_fp and options.extended_ref_fp:
         raise ValueError('Input should be either an extended alignment or a query alignment, but not both!')
+
+    if options.find_support and options.dist_fp:
+        options.find_support = False
+
+    if options.find_support:
+        if not options.fast_support and options.disable_reestimation:
+            options.fast_support = True
+
+        if options.sample_count <= 0:
+            raise ValueError('Sample count has to be a positive integer.')
 
     return options, args
