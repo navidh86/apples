@@ -1,6 +1,6 @@
 from apples.support.find_support import get_support
 
-def join_jplace_old(lst):
+def join_jplace(lst):
     result = lst[0]
     if len(lst) == 1:
         if result["placements"][0]["p"][0][0] == -1:
@@ -11,7 +11,7 @@ def join_jplace_old(lst):
                 result["placements"] = result["placements"] + lst[i]["placements"]
     return result
 
-def join_jplace(lst):
+def join_jplace_support(lst):
     support = get_support(lst)
     result = lst[0][0]
     result["placements"][0]["p"][0].append(support[0])
