@@ -17,6 +17,7 @@ import pickle
 
 from apples.support.Bootstrapping import Bootstrapping
 import numpy as np
+import os.path
 
 
 if __name__ == "__main__":
@@ -73,10 +74,7 @@ if __name__ == "__main__":
                 "[%s] Reduced reference is loaded from APPLES database in %.3f seconds." % (
                     time.strftime("%H:%M:%S"), (time.time() - start)))
 
-        reference.set_baseobs(options.base_observation_threshold)
-        
-        if options.find_support:
-            Bootstrapping.sample_count = options.sample_count
+        reference.set_baseobs(options.base_observation_threshold)        
 
         start = time.time()
         if options.query_fp:
@@ -119,9 +117,12 @@ if __name__ == "__main__":
         result = join_jplace(results)
     else:
         if not options.fast_support:
-            results = Bootstrapping.performSlowBootstrapping(orig_tree_fp, reference.refs, query_dict, options.sample_count, len(reference.representatives[0][0]),results)
-
+            results = Bootstrapping.performSlowBootstrapping(orig_tree_fp, reference.refs, query_dict, 
+                                    options.sample_count, len(reference.representatives[0][0]), results, 
+                                    os.path.dirname(os.path.abspath(__file__)))
+            Bootstrapping.sample_count = options.sample_count
         result = join_jplace_support(results)
+
     result["tree"] = extended_newick_string
     result["metadata"] = {"invocation": " ".join(sys.argv)}
     result["fields"] = ["edge_num", "likelihood", "like_weight_ratio", "distal_length", "pendant_length"]

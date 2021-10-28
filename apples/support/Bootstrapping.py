@@ -1,5 +1,6 @@
 import numpy as np
 import os
+from os.path import dirname
 import subprocess as sp
 import json
 
@@ -34,7 +35,8 @@ class Bootstrapping:
         return Bootstrapping.boot
 
     @classmethod
-    def performSlowBootstrapping(cls, tree_fp, old_refs, old_queries, sample_count, sequence_length, old_results):
+    def performSlowBootstrapping(cls, tree_fp, old_refs, old_queries, sample_count, sequence_length, old_results, execpath):
+        execpath = os.path.join(execpath, "run_apples.py")
         np.random.seed(56)
 
         if not os.path.isdir('Boot'):
@@ -52,7 +54,9 @@ class Bootstrapping:
         for query in old_queries:
             queries[query] = old_queries[query].tostring().decode('utf-8')
 
-        for i in range(Bootstrapping.sample_count):
+        for i in range(sample_count):
+            print("Bootstrap sample: " + str(i+1))
+
             boot = np.random.choice(sequence_length, sequence_length, replace=True)
             boot_refs = {}
             boot_queries = {}
@@ -69,8 +73,6 @@ class Bootstrapping:
                         boot_queries[query] = []
                     boot_queries[query].append(queries[query][pos])
             
-            # print(boot_queries)
-
             fp = open("Boot/boot_ref_"+str(i+1)+'.fa', "w")
             for ref in boot_refs:
                 fp.write(">" + ref + "\n")
@@ -86,7 +88,7 @@ class Bootstrapping:
             fp.close()
 
             # Run APPLES on the sample query and ref alignments
-            sp.run(['python3', 'run_apples.py', '-t', tree_fp, '-q', 'Boot/boot_query_'+str(i+1)+'.fa', 
+            sp.run(['python3', execpath, '-t', tree_fp, '-q', 'Boot/boot_query_'+str(i+1)+'.fa', 
             '-s', 'Boot/boot_ref_'+str(i+1)+'.fa', '-o', 'Boot/boot_out_'+str(i+1)+'.jplace'], stdout=sp.DEVNULL, stderr=sp.STDOUT)
 
             fp = open("Boot/boot_out_" + str(i+1) + ".jplace")
