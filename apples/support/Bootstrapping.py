@@ -3,6 +3,7 @@ import os
 from os.path import dirname
 import subprocess as sp
 import json
+import tempfile
 
 class Bootstrapping:
     boot = [] # the 2d matrix
@@ -30,17 +31,12 @@ class Bootstrapping:
 
         Bootstrapping.sample_count = sample_count
 
-        print("Shape = " + str(Bootstrapping.boot2.shape))
-
         return Bootstrapping.boot
 
     @classmethod
     def performSlowBootstrapping(cls, tree_fp, old_refs, old_queries, sample_count, sequence_length, old_results, execpath):
         execpath = os.path.join(execpath, "run_apples.py")
         np.random.seed(56)
-
-        if not os.path.isdir('Boot'):
-            os.mkdir('Boot')
 
         results = []
         for result in old_results:
@@ -73,25 +69,28 @@ class Bootstrapping:
                         boot_queries[query] = []
                     boot_queries[query].append(queries[query][pos])
             
-            fp = open("Boot/boot_ref_"+str(i+1)+'.fa', "w")
+            ref_fp = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
             for ref in boot_refs:
-                fp.write(">" + ref + "\n")
-                fp.write(''.join(boot_refs[ref]) + "\n")
+                ref_fp.write(">" + ref + "\n")
+                ref_fp.write(''.join(boot_refs[ref]) + "\n")
                 boot_refs[ref] = []
-            fp.close()
+            ref_fp.close()
 
-            fp = open("Boot/boot_query_"+str(i+1)+'.fa', "w")
+            query_fp = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
             for query in boot_queries:
-                fp.write(">" + query + "\n")
-                fp.write(''.join(boot_queries[query]) + "\n")
+                query_fp.write(">" + query + "\n")
+                query_fp.write(''.join(boot_queries[query]) + "\n")
                 boot_queries[query] = []
-            fp.close()
+            query_fp.close()
+
+            out_fp = tempfile.NamedTemporaryFile(delete=False)
+            out_fp.close()
 
             # Run APPLES on the sample query and ref alignments
-            sp.run(['python3', execpath, '-t', tree_fp, '-q', 'Boot/boot_query_'+str(i+1)+'.fa', 
-            '-s', 'Boot/boot_ref_'+str(i+1)+'.fa', '-o', 'Boot/boot_out_'+str(i+1)+'.jplace'], stdout=sp.DEVNULL, stderr=sp.STDOUT)
+            sp.run(['python3', execpath, '-t', tree_fp, '-q', query_fp.name, '-s', ref_fp.name, '-o', out_fp.name], 
+                    stdout=sp.DEVNULL, stderr=sp.STDOUT)
 
-            fp = open("Boot/boot_out_" + str(i+1) + ".jplace")
+            fp = open(out_fp.name)
             jp = fp.read()
             fp.close()
             jp = json.loads(jp)
@@ -100,10 +99,8 @@ class Bootstrapping:
                 ar = [placement]
                 results[idx][i+1] = {"placements": ar}
 
-            os.remove('Boot/boot_query_'+str(i+1)+'.fa')
-            os.remove('Boot/boot_ref_'+str(i+1)+'.fa')
-            os.remove('Boot/boot_out_'+str(i+1)+'.jplace')
-
-        os.rmdir('Boot')
+            os.remove(ref_fp.name)
+            os.remove(query_fp.name)
+            os.remove(out_fp.name)
 
         return results
