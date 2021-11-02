@@ -99,23 +99,10 @@ class PoolQueryWorker:
         jplace = dict()
         
         start_dist = time.time()
-        if not obs_dist:
-            obs_dist = cls.reference.get_obs_dist_support(query_seq, query_name)
-        else:
-            def valid_dists(obs_dist, name_to_node_map):
-                tx = 0
-                for k, v in sorted(obs_dist.items(), key=lambda kv: kv[1]):
-                    if v < 0 or k not in name_to_node_map:
-                        continue
-                    tx += 1
-                    if tx > cls.options.base_observation_threshold and v > cls.options.filt_threshold:
-                        break
-                    yield (k, v)
-
-            obs_dist = dict(valid_dists(obs_dist, cls.name_to_node_map))
+        obs_dist = cls.reference.get_obs_dist_support(query_seq, query_name)
         end_dist = time.time() - start_dist
 
-        for j, od in obs_dist.items():
+        for j, od in enumerate(obs_dist):
             jplace[j] = {}
             jplace[j]["placements"] = [{"p": [[0, 0, 1, 0, 0]], "n": [query_name]}]
 
