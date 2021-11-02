@@ -116,7 +116,7 @@ class ReducedReference(Reference):
                     representative_dists[j].append((dist[j], i))
 
         for j, rd in enumerate(representative_dists):
-            obs_dist[j] = {} 
+            obs_dist = {} 
             obs_num = 0
             
             heapq.heapify(rd)
@@ -127,10 +127,11 @@ class ReducedReference(Reference):
                     for thing in group:
                         thing_d = jc69_support(query_seq, self.refs[thing], Bootstrapping.boot2[j])[0]
                         if not thing_d < 0:
-                            obs_dist[j][thing] = thing_d
+                            obs_dist[thing] = thing_d
                             obs_num += 1
                 else:
                     break
+            yield obs_dist
         # for k,v in obs_dist.items():
         #    print(k+"\t"+str(v))
-        return obs_dist
+        # return obs_dist
