@@ -34,8 +34,8 @@ class Bootstrapping:
         return Bootstrapping.boot
 
     @classmethod
-    def performSlowBootstrapping(cls, tree_fp, old_refs, old_queries, sample_count, sequence_length, old_results, execpath):
-        execpath = os.path.join(execpath, "run_apples.py")
+    def performSlowBootstrapping(cls, tree_fp, old_refs, old_queries, sample_count, sequence_length, 
+                                old_results, execpath, options):
         np.random.seed(56)
 
         results = []
@@ -86,8 +86,9 @@ class Bootstrapping:
             out_fp = tempfile.NamedTemporaryFile(delete=False)
             out_fp.close()
 
-            # Run APPLES on the sample query and ref alignments
-            sp.run(['python3', execpath, '-t', tree_fp, '-q', query_fp.name, '-s', ref_fp.name, '-o', out_fp.name], 
+            # Run APPLES on the sampled query and ref alignments
+            sp.run(['python3', execpath, '-t', tree_fp, '-q', query_fp.name, '-s', ref_fp.name, '-o', out_fp.name, 
+                    '-b', str(options.base_observation_threshold), '-f', str(options.filt_threshold)], 
                     stdout=sp.DEVNULL, stderr=sp.STDOUT)
 
             fp = open(out_fp.name)
