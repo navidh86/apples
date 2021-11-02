@@ -119,7 +119,7 @@ if __name__ == "__main__":
         if not options.fast_support:
             results = Bootstrapping.performSlowBootstrapping(orig_tree_fp, reference.refs, query_dict, 
                                     options.sample_count, len(reference.representatives[0][0]), results, 
-                                    os.path.dirname(os.path.abspath(__file__)))
+                                    os.path.abspath(__file__), options)
             Bootstrapping.sample_count = options.sample_count
         result = join_jplace_support(results)
 
