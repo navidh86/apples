@@ -59,6 +59,7 @@ def options_config():
 
     if options.find_support and options.dist_fp:
         options.find_support = False
+        logging.warning("To find support, input should be an alignment.")
 
     if options.find_support:
         if not options.fast_support and options.disable_reestimation:
