@@ -13,7 +13,7 @@ class Bootstrapping:
     np.random.seed(56)
 
     @classmethod
-    def getBootMatrix(cls, sample_count, sequence_length):
+    def get_boot_matrix(cls, sample_count, sequence_length):
         # create bootstrap matrix
         mat = np.random.choice(sequence_length, (sample_count, sequence_length), replace=True)
 
@@ -29,15 +29,11 @@ class Bootstrapping:
             Bootstrapping.boot[i] = np.bincount(mat[i-1], minlength=sequence_length)
             Bootstrapping.boot2[i] = Bootstrapping.boot[i].reshape((1, sequence_length))
 
-        Bootstrapping.sample_count = sample_count
-
         return Bootstrapping.boot
 
     @classmethod
-    def performSlowBootstrapping(cls, tree_fp, old_refs, old_queries, sample_count, sequence_length, 
+    def perform_slow_bootstrapping(cls, tree_fp, old_refs, old_queries, sample_count, sequence_length, 
                                 old_results, execpath, options):
-        np.random.seed(56)
-
         results = []
         for result in old_results:
             results.append({0: result})

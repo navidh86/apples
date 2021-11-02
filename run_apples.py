@@ -95,12 +95,13 @@ if __name__ == "__main__":
     queryworker = PoolQueryWorker()
     queryworker.set_class_attributes(reference, options, name_to_node_map)
 
+    if options.find_support:
+        Bootstrapping.sample_count = options.sample_count
+
     if not options.fast_support:
         query_function = queryworker.runquery
-        # if options.find_support:
-        #     Bootstrapping.sample_count = options.sample_count
     else:
-        boot = Bootstrapping.getBootMatrix(options.sample_count, len(reference.representatives[0][0]))
+        boot = Bootstrapping.get_boot_matrix(options.sample_count, len(reference.representatives[0][0]))
         query_function = queryworker.runquery_support_fast
 
     if _platform == "win32" or _platform == "win64" or _platform == "msys":
@@ -117,10 +118,9 @@ if __name__ == "__main__":
         result = join_jplace(results)
     else:
         if not options.fast_support:
-            results = Bootstrapping.performSlowBootstrapping(orig_tree_fp, reference.refs, query_dict, 
+            results = Bootstrapping.perform_slow_bootstrapping(orig_tree_fp, reference.refs, query_dict, 
                                     options.sample_count, len(reference.representatives[0][0]), results, 
                                     os.path.abspath(__file__), options)
-            Bootstrapping.sample_count = options.sample_count
         result = join_jplace_support(results)
 
     result["tree"] = extended_newick_string
