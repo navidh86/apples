@@ -1,3 +1,4 @@
+from apples.support.find_support import get_support
 
 def join_jplace(lst):
     result = lst[0]
@@ -8,6 +9,20 @@ def join_jplace(lst):
         for i in range(1,len(lst)):
             if lst[i]["placements"][0]["p"][0][0] != -1:
                 result["placements"] = result["placements"] + lst[i]["placements"]
+    return result
+
+def join_jplace_support(lst):
+    support = get_support(lst)
+    result = lst[0][0]
+    result["placements"][0]["p"][0].append(support[0])
+    if len(lst) == 1:
+        if result["placements"][0]["p"][0][0] == -1:
+            result["placements"] = []
+    else:
+        for i in range(1,len(lst)):
+            if lst[i][0]["placements"][0]["p"][0][0] != -1:
+                lst[i][0]["placements"][0]["p"][0].append(support[i])
+                result["placements"] = result["placements"] + lst[i][0]["placements"]
     return result
 
 def extended_newick(tree):

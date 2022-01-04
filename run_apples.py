@@ -5,7 +5,7 @@ from apples.fasta2dic import fasta2dic
 from apples.Reference import ReducedReference
 from apples.OptionsRun import options_config
 import multiprocessing as mp
-from apples.jutil import join_jplace
+from apples.jutil import join_jplace, join_jplace_support
 import sys
 import json
 from sys import platform as _platform
@@ -14,6 +14,10 @@ from apples.prepareTree import prepareTree
 import time
 import logging
 import pickle
+
+from apples.support.Bootstrapping import Bootstrapping
+import numpy as np
+import os.path
 
 
 if __name__ == "__main__":
@@ -35,6 +39,7 @@ if __name__ == "__main__":
                 time.strftime("%H:%M:%S"), (time.time() - start)))
 
     if options.tree_fp:
+        orig_tree_fp = options.tree_fp
         first_read_tree, name_to_node_map, extended_newick_string = prepareTree(options)
 
     if options.dist_fp:
@@ -70,6 +75,7 @@ if __name__ == "__main__":
                     time.strftime("%H:%M:%S"), (time.time() - start)))
 
         reference.set_baseobs(options.base_observation_threshold)
+
         start = time.time()
         if options.query_fp:
             query_dict = fasta2dic(options.query_fp, options.protein_seqs, options.mask_lowconfidence)
@@ -88,20 +94,40 @@ if __name__ == "__main__":
     startq = time.time()
     queryworker = PoolQueryWorker()
     queryworker.set_class_attributes(reference, options, name_to_node_map)
+
+    if options.find_support:
+        Bootstrapping.sample_count = options.sample_count
+
+    if not options.fast_support:
+        query_function = queryworker.runquery
+    else:
+        boot = Bootstrapping.get_boot_matrix(options.sample_count, len(reference.representatives[0][0]))
+        query_function = queryworker.runquery_support_fast
+
     if _platform == "win32" or _platform == "win64" or _platform == "msys":
         # if windows, multithreading is not supported until either
         # processes can be forked in windows or apples works with spawn.
-        results = list(map(lambda a: queryworker.runquery(a[0], *a[1:]), queries))   # a.k.a starmap
+        results = list(map(lambda a: query_function(a[0], *a[1:]), queries))   # a.k.a starmap
     else:
         pool = mp.Pool(options.num_thread)
-        results = pool.starmap(queryworker.runquery, queries)
+        results = pool.starmap(query_function, queries)
     logging.info(
         "[%s] Processed all queries in %.3f seconds." % (time.strftime("%H:%M:%S"), (time.time() - startq)))
 
-    result = join_jplace(results)
+    if not options.find_support:
+        result = join_jplace(results)
+    else:
+        if not options.fast_support:
+            results = Bootstrapping.perform_slow_bootstrapping(orig_tree_fp, reference.refs, query_dict, 
+                                    options.sample_count, len(reference.representatives[0][0]), results, 
+                                    os.path.abspath(__file__), options)
+        result = join_jplace_support(results)
+
     result["tree"] = extended_newick_string
     result["metadata"] = {"invocation": " ".join(sys.argv)}
     result["fields"] = ["edge_num", "likelihood", "like_weight_ratio", "distal_length", "pendant_length"]
+    if options.find_support:
+        result["fields"].append("support")
     result["version"] = 3
 
     if options.output_fp:

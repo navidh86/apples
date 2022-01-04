@@ -6,6 +6,7 @@ from apples.BE import BE
 from apples.BME import BME
 import sys
 from apples.Subtree import Subtree
+from apples.support.Bootstrapping import Bootstrapping
 
 
 class PoolQueryWorker:
@@ -91,4 +92,74 @@ class PoolQueryWorker:
             "[%s] Dynamic programming is completed for query %s in %.3f seconds." %
             (time.strftime("%H:%M:%S"), query_name, end_dist,
              time.strftime("%H:%M:%S"), query_name, end_dp))
+        return jplace
+
+    @classmethod
+    def runquery_support_fast(cls, query_name, query_seq, obs_dist):
+        jplace = dict()
+        
+        start_dist = time.time()
+        obs_dist = cls.reference.get_obs_dist_support(query_seq, query_name)
+        end_dist = time.time() - start_dist
+
+        for j, od in enumerate(obs_dist):
+            jplace[j] = {}
+            jplace[j]["placements"] = [{"p": [[0, 0, 1, 0, 0]], "n": [query_name]}]
+
+            if len(od) <= 2:
+                start_dp = time.time()
+                jplace[j]["placements"][0]["p"][0][0] = -1
+                end_dp = time.time() - start_dp
+
+                if j == 0:
+                    sys.stderr.write('Taxon {} cannot be placed. At least three non-infinity distances '
+                                    'should be observed to place a taxon. '
+                                    'Consequently, this taxon is ignored (no output).\n'.format(query_name))
+
+                    logging.info(
+                        "[%s] Distances are computed for query %s in %.3f seconds.\n"
+                        "[%s] Dynamic programming is completed for query %s in %.3f seconds." %
+                        (time.strftime("%H:%M:%S"), query_name, end_dist,
+                        time.strftime("%H:%M:%S"), query_name, end_dp))
+                continue
+
+            start_dp = time.time()
+            placement_flag = False
+            for k, v in od.items():
+                if v == 0 and k != query_name:
+                    jplace[j]["placements"][0]["p"][0][0] = cls.name_to_node_map[k].edge_index
+                    placement_flag = True
+                    break
+            if placement_flag:
+                continue
+
+            subtree = Subtree(od, cls.name_to_node_map)
+
+            if cls.options.method_name == "BE":
+                alg = BE(subtree)
+            elif cls.options.method_name == "FM":
+                alg = FM(subtree)
+            elif cls.options.method_name == "BME":
+                alg = BME(subtree)
+            else:
+                alg = OLS(subtree)
+            alg.dp_frag()
+
+            alg.placement_per_edge(cls.options.negative_branch)
+            presult, potential_misplacement_flag = alg.placement(cls.options.criterion_name)
+            jplace[j]["placements"][0]["p"] = [presult]
+            if potential_misplacement_flag == 1 and j == 0:
+                logging.warning(
+                    "Best placement for query sequence %s has zero pendant edge length and placed at an internal node "
+                    "with a non-zero least squares error. This is a potential misplacement." % query_name)
+            subtree.unroll_changes()
+
+            end_dp = time.time() - start_dp
+            if j == 0:
+                logging.info(
+                    "[%s] Distances are computed for query %s in %.3f seconds.\n"
+                    "[%s] Dynamic programming is completed for query %s in %.3f seconds." %
+                    (time.strftime("%H:%M:%S"), query_name, end_dist,
+                    time.strftime("%H:%M:%S"), query_name, end_dp))
+
         return jplace

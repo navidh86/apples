@@ -102,3 +102,19 @@ def jc69(a2, b2):
             return -1.0  # treat as missing data
         else:
             return -0.75 * np.log(loc)
+
+def jc69_support(a2, b2, boot):    
+    nondash = np.logical_and(a2 != b'-', b2 != b'-')
+    valid = np.dot(boot, nondash)
+    prop = valid / len(a2)
+    validdist = prop >= 0.001
+    valid[~validdist] = len(a2)
+    p = np.dot(boot, np.logical_and(a2 != b2, nondash)) * 1.0 / valid
+    p[p < np.finfo(float).eps] = 0
+    loc = 1 - (4 * p / 3)
+    validdist = np.logical_and((0 < loc), validdist)
+    loc[~validdist] = 1
+    res = -0.75 * np.log(loc)
+    res[~validdist] = -1.0
+    
+    return res
