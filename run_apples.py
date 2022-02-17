@@ -126,8 +126,6 @@ if __name__ == "__main__":
     result["tree"] = extended_newick_string
     result["metadata"] = {"invocation": " ".join(sys.argv)}
     result["fields"] = ["edge_num", "likelihood", "like_weight_ratio", "distal_length", "pendant_length"]
-    if options.find_support:
-        result["fields"].append("support")
     result["version"] = 3
 
     if options.output_fp:
