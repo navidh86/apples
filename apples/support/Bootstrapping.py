@@ -4,6 +4,7 @@ from os.path import dirname
 import subprocess as sp
 import json
 import tempfile
+import shutil
 
 class Bootstrapping:
     boot = [] # the 2d matrix
@@ -32,19 +33,19 @@ class Bootstrapping:
         return Bootstrapping.boot
 
     @classmethod
-    def perform_slow_bootstrapping(cls, tree_fp, old_refs, old_queries, sample_count, sequence_length, 
+    def perform_slow_bootstrapping(cls, tree_fp, refs, queries, sample_count, sequence_length, 
                                 old_results, execpath, options):
         results = []
         for result in old_results:
             results.append({0: result})
 
-        refs = {}
-        for ref in old_refs:
-            refs[ref] = old_refs[ref].tostring().decode('utf-8')
+        # refs = {}
+        # for ref in old_refs:
+        #     refs[ref] = old_refs[ref].tostring().decode('utf-8')
         
-        queries = {}
-        for query in old_queries:
-            queries[query] = old_queries[query].tostring().decode('utf-8')
+        # queries = {}
+        # for query in old_queries:
+        #     queries[query] = old_queries[query].tostring().decode('utf-8')
 
         for i in range(sample_count):
             print("Bootstrap sample: " + str(i+1))
@@ -53,30 +54,21 @@ class Bootstrapping:
             boot_refs = {}
             boot_queries = {}
 
-            for j, pos in enumerate(boot):
-                # ref
-                for ref in refs:
-                    if j == 0:
-                        boot_refs[ref] = []
-                    boot_refs[ref].append(refs[ref][pos])
-                # query
-                for query in queries:
-                    if j == 0:
-                        boot_queries[query] = []
-                    boot_queries[query].append(queries[query][pos])
+            for ref in refs:
+                boot_refs[ref] = refs[ref][boot].tostring().decode('utf-8')
+            for query in queries:
+                boot_queries[query] = queries[query][boot].tostring().decode('utf-8')
             
             ref_fp = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
             for ref in boot_refs:
                 ref_fp.write(">" + ref + "\n")
                 ref_fp.write(''.join(boot_refs[ref]) + "\n")
-                boot_refs[ref] = []
             ref_fp.close()
 
             query_fp = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
             for query in boot_queries:
                 query_fp.write(">" + query + "\n")
                 query_fp.write(''.join(boot_queries[query]) + "\n")
-                boot_queries[query] = []
             query_fp.close()
 
             out_fp = tempfile.NamedTemporaryFile(delete=False)
