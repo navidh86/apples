@@ -12,8 +12,7 @@ class Bootstrapping:
     boot2 = [] # 3d version of the same matrix
 
     # subsampling
-    subsamp = [] # the 2d subsampling matrix
-    subsamp2 = [] # the 3d version of the same matrix
+    SUBSAMPLE = False # flag to indicate if subsampling is being used
 
     sample_count = 0
     sequence_length = 0
@@ -24,7 +23,7 @@ class Bootstrapping:
         # create bootstrap matrix
         mat = np.random.choice(sequence_length, (sample_count, sequence_length), replace=True)
 
-        print("matboot:", mat)
+        # print("matboot:", mat)
 
         # count of each item per row
         Bootstrapping.boot = np.zeros((sample_count+1, sequence_length))
@@ -51,18 +50,18 @@ class Bootstrapping:
             mat.append(np.random.choice(sequence_length, sample_length, replace=False))
 
         # count of each item per row
-        Bootstrapping.subsamp = np.zeros((sample_count+1, sequence_length))
-        Bootstrapping.subsamp2 = np.zeros((sample_count+1, 1, sequence_length))
+        Bootstrapping.boot = np.zeros((sample_count+1, sequence_length))
+        Bootstrapping.boot2 = np.zeros((sample_count+1, 1, sequence_length))
         
         # first row is all ones
-        Bootstrapping.subsamp[0] = np.ones(sequence_length)
-        Bootstrapping.subsamp2[0] = np.ones((1, sequence_length))
+        Bootstrapping.boot[0] = np.ones(sequence_length)
+        Bootstrapping.boot2[0] = np.ones((1, sequence_length))
 
         for i in range(1, sample_count+1):
-            Bootstrapping.subsamp[i] = np.bincount(mat[i-1], minlength=sequence_length)
-            Bootstrapping.subsamp2[i] = Bootstrapping.subsamp[i].reshape((1, sequence_length))
+            Bootstrapping.boot[i] = np.bincount(mat[i-1], minlength=sequence_length)
+            Bootstrapping.boot2[i] = Bootstrapping.boot[i].reshape((1, sequence_length))
 
-        return Bootstrapping.subsamp
+        return Bootstrapping.boot
 
     @classmethod
     def perform_slow_bootstrapping(cls, tree_fp, refs, queries, sample_count, sequence_length, 

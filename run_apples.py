@@ -101,7 +101,11 @@ if __name__ == "__main__":
     if not options.fast_support:
         query_function = queryworker.runquery
     else:
-        boot = Bootstrapping.get_boot_matrix(options.sample_count, len(reference.representatives[0][0]))
+        if not options.subsample:
+            boot = Bootstrapping.get_boot_matrix(options.sample_count, len(reference.representatives[0][0]))
+        else:
+            Bootstrapping.SUBSAMPLE = True
+            boot = Bootstrapping.get_subsample_matrix(options.sample_count, len(reference.representatives[0][0]))
         query_function = queryworker.runquery_support_fast
 
     if _platform == "win32" or _platform == "win64" or _platform == "msys":
