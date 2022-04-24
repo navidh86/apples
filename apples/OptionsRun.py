@@ -1,6 +1,8 @@
 from apples.OptionsBasic import OptionsBasic
 import logging
 
+from apples.support.Bootstrapping import Bootstrapping
+
 
 def options_config():
     parser = OptionsBasic("jplace")
@@ -30,9 +32,11 @@ def options_config():
     parser.add_option("-S", "--support", dest="find_support", action='store_true', default=False,
                       help="adds support value for the placed queries.")                    
     parser.add_option("-F", "--fast", dest="fast_support", action='store_true', default=False,
-                      help="enables fast bootstrapping (True by default if reestimation is turned off).")                    
+                      help="enables fast bootstrapping (True by default if reestimation is turned off).")
     parser.add_option("-N", "--sample", dest="sample_count", type=int, default=100,
                       help="number of bootstrapping samples.", metavar="NUMBER")                    
+    parser.add_option("--subsample", dest="subsample", action='store_true', default=False,
+                      help="uses subsampling instead of bootstrapping (only for fast bootstrapping).")                    
 
 
     (options, args) = parser.parse()
@@ -69,5 +73,8 @@ def options_config():
             raise ValueError('Sample count has to be a positive integer.')
     else:
         options.fast_support = False
+
+    if not options.fast_support:
+        options.subsample = False
 
     return options, args
