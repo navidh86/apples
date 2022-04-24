@@ -118,3 +118,32 @@ def jc69_support(a2, b2, boot):
     res[~validdist] = -1.0
     
     return res
+
+
+def jc69_support(a2, b2, boot, SUBSAMPLE):    
+    nondash = np.logical_and(a2 != b'-', b2 != b'-')
+    valid = np.dot(boot, nondash)
+    prop = valid / len(a2)
+    validdist = prop >= 0.001
+    valid[~validdist] = len(a2)
+    p = np.dot(boot, np.logical_and(a2 != b2, nondash)) * 1.0 / valid
+    p[p < np.finfo(float).eps] = 0
+
+    # adjust
+    if SUBSAMPLE:
+        n = len(a2)
+        b = np.sum(boot[1])
+
+        # print("n:", n)
+        # print("b:", b)
+        h_n = p[0]
+
+        p = (np.sqrt(b/n) * (p-h_n)) + h_n
+
+    loc = 1 - (4 * p / 3)
+    validdist = np.logical_and((0 < loc), validdist)
+    loc[~validdist] = 1
+    res = -0.75 * np.log(loc)
+    res[~validdist] = -1.0
+    
+    return res
