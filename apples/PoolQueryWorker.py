@@ -108,6 +108,8 @@ class PoolQueryWorker:
         obs_dist = cls.reference.get_obs_dist_support(query_seq, query_name)
         end_dist = time.time() - start_dist
 
+        valids = []
+
         for j, od in enumerate(obs_dist):
             jplace[j] = {}
             jplace[j]["placements"] = [{"p": [[0, 0, 1, 0, 0]], "n": [query_name]}]
@@ -127,6 +129,8 @@ class PoolQueryWorker:
                         "[%s] Dynamic programming is completed for query %s in %.3f seconds." %
                         (time.strftime("%H:%M:%S"), query_name, end_dist,
                         time.strftime("%H:%M:%S"), query_name, end_dp))
+                    
+                    valids = [jplace[j]["placements"][0]["p"][0]]
                 continue
 
             start_dp = time.time()
@@ -137,6 +141,8 @@ class PoolQueryWorker:
                     placement_flag = True
                     break
             if placement_flag:
+                if j == 0:
+                    valids = [jplace[j]["placements"][0]["p"][0]]
                 continue
 
             subtree = Subtree(od, cls.name_to_node_map)
@@ -152,7 +158,12 @@ class PoolQueryWorker:
             alg.dp_frag()
 
             alg.placement_per_edge(cls.options.negative_branch)
-            presult, potential_misplacement_flag = alg.placement(cls.options.criterion_name)
+
+            if j == 0:
+                presult, potential_misplacement_flag, valids = alg.placement(cls.options.criterion_name, True)
+            else:
+                presult, potential_misplacement_flag = alg.placement(cls.options.criterion_name, False)
+
             jplace[j]["placements"][0]["p"] = [presult]
             if potential_misplacement_flag == 1 and j == 0:
                 logging.warning(
@@ -168,4 +179,4 @@ class PoolQueryWorker:
                     (time.strftime("%H:%M:%S"), query_name, end_dist,
                     time.strftime("%H:%M:%S"), query_name, end_dp))
 
-        return jplace
+        return jplace, valids

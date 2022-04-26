@@ -1,4 +1,5 @@
-from apples.support.find_support import get_support
+from numpy import pad
+from apples.support.find_support import get_support, get_support_all
 
 def join_jplace(lst):
     result = lst[0]
@@ -24,6 +25,42 @@ def join_jplace_support(lst):
                 lst[i][0]["placements"][0]["p"][0][2] = support[i]
                 result["placements"] = result["placements"] + lst[i][0]["placements"]
     return result
+
+def join_jplace_support_all(lst, valids, keep_factor, keep_at_most):
+    support = get_support_all(lst)
+    update_valids(valids, support, keep_factor, keep_at_most)
+    result = {}
+    result["placements"] = []
+    for i in range(len(lst)):
+        temp = {}
+        query_name = lst[i][0]["placements"][0]["n"][0]
+        temp["n"] = [query_name]
+        temp["p"] = valids[query_name]
+        result["placements"].append(temp)
+    return result
+
+def update_valids(valids, support, keep_factor, keep_at_most):
+    for query, placements in valids.items():
+        for p in placements:
+            if p[0] in support[query]:
+                p[2] = support[query][p[0]]
+            else:
+                p[2] = 0
+
+        # sort according to support, then LSE
+        placements.sort(key=lambda x: (-x[2], x[1])) # descending by support, ascending by LSE
+
+        # filter out anything with support < keep_factor * highest support
+        threshold = keep_factor * placements[0][2]
+        placements = list(filter(lambda x: x[2] >= threshold, placements))
+
+        # cut lenght of list to at most keep_at_most
+        if len(placements) > keep_at_most:
+            placements = placements[:keep_at_most]
+
+        valids[query] = placements
+
+
 
 def extended_newick(tree):
     """Newick printing algorithm is based on treeswift"""
