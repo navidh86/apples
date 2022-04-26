@@ -85,3 +85,12 @@ Detailed tutorial on how to run APPLES on various datasets
 Please refer to the tutorial below for detailed examples of usage in alignment-based and alignment-free settings.
 
 [https://github.com/smirarab/tutorials/blob/master/Skmer-APPLES-tutorial.md](https://github.com/smirarab/tutorials/blob/master/Skmer-APPLES-tutorial.md)
+
+-------------
+CHANGELOG
+-------------
+2.0.9
+* Amino acid distances are now computed using the same BLOSUM45 matrix used in FastTree2.
+ 
+2.0.8
+* Pairwise distance overlap requirement parameter can now be changed by the user.
