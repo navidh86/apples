@@ -27,6 +27,7 @@ class PoolQueryWorker:
     def runquery(cls, query_name, query_seq, obs_dist):
         jplace = dict()
         jplace["placements"] = [{"p": [[0, 0, 1, 0, 0]], "n": [query_name]}]
+        valids = []
 
         start_dist = time.time()
         if not obs_dist:
@@ -48,22 +49,24 @@ class PoolQueryWorker:
         if len(obs_dist) <= 2:
             start_dp = time.time()
             sys.stderr.write('Taxon {} cannot be placed. At least three non-infinity distances '
-                             'should be observed to place a taxon. '
-                             'Consequently, this taxon is ignored (no output).\n'.format(query_name))
+                                'should be observed to place a taxon. '
+                                'Consequently, this taxon is ignored (no output).\n'.format(query_name))
             jplace["placements"][0]["p"][0][0] = -1
+            valids = [jplace["placements"][0]["p"][0]]
             end_dp = time.time() - start_dp
             logging.info(
                 "[%s] Distances are computed for query %s in %.3f seconds.\n"
                 "[%s] Dynamic programming is completed for query %s in %.3f seconds." %
                 (time.strftime("%H:%M:%S"), query_name, end_dist,
-                 time.strftime("%H:%M:%S"), query_name, end_dp))
-            return jplace
+                    time.strftime("%H:%M:%S"), query_name, end_dp))
+            return jplace, valids
 
         start_dp = time.time()
         for k, v in obs_dist.items():
             if v == 0 and k != query_name:
                 jplace["placements"][0]["p"][0][0] = cls.name_to_node_map[k].edge_index
-                return jplace
+                valids = [jplace["placements"][0]["p"][0]]
+                return jplace, valids
 
         subtree = Subtree(obs_dist, cls.name_to_node_map)
 
@@ -78,11 +81,12 @@ class PoolQueryWorker:
         alg.dp_frag()
 
         alg.placement_per_edge(cls.options.negative_branch)
-        presult, potential_misplacement_flag = alg.placement(cls.options.criterion_name)
+        presult, potential_misplacement_flag, valids = alg.placement(cls.options.criterion_name, True)
         jplace["placements"][0]["p"] = [presult]
         if potential_misplacement_flag == 1:
             if cls.options.exclude_intplace:
                 jplace["placements"][0]["p"][0][0] = -1
+                valids = [jplace["placements"][0]["p"][0][0]]
                 ignoredprompt = " Consequently, this sequence is ignored (no output)."
             else:
                 ignoredprompt = ""
@@ -97,8 +101,8 @@ class PoolQueryWorker:
             "[%s] Distances are computed for query %s in %.3f seconds.\n"
             "[%s] Dynamic programming is completed for query %s in %.3f seconds." %
             (time.strftime("%H:%M:%S"), query_name, end_dist,
-             time.strftime("%H:%M:%S"), query_name, end_dp))
-        return jplace
+                time.strftime("%H:%M:%S"), query_name, end_dp))
+        return jplace, valids
 
     @classmethod
     def runquery_support_fast(cls, query_name, query_seq, obs_dist):

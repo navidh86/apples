@@ -116,12 +116,17 @@ if __name__ == "__main__":
 
     results = []
     valids = {}
-    if options.fast_support:
-        for result in results_combined:
-            results.append(result[0])
-            valids[result[0][0]['placements'][0]['n'][0]] = result[1]
+    if options.find_support:
+        if options.fast_support:
+            for result in results_combined:                
+                results.append(result[0])
+                valids[result[0][0]['placements'][0]['n'][0]] = result[1]
+        else:
+            for result in results_combined:                
+                results.append(result[0])
+                valids[result[0]['placements'][0]['n'][0]] = result[1]
     else:
-        results = results_combined
+        results = [rc[0] for rc in results_combined]
 
     if not options.find_support:
         result = join_jplace(results)
@@ -130,9 +135,9 @@ if __name__ == "__main__":
             results = Bootstrapping.perform_slow_bootstrapping(orig_tree_fp, reference.refs, query_dict, 
                                     options.sample_count, len(reference.representatives[0][0]), results, 
                                     os.path.abspath(__file__), options)
-            result = join_jplace_support(results)
-        else:
-            result = join_jplace_support_all(results, valids, options.keep_factor, options.keep_at_most)                                    
+        #     result = join_jplace_support(results)
+        # else:
+        result = join_jplace_support_all(results, valids, options.keep_factor, options.keep_at_most)                                    
         # result = join_jplace_support(results)
 
     result["tree"] = extended_newick_string
