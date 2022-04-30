@@ -5,7 +5,7 @@ from apples.fasta2dic import fasta2dic
 from apples.Reference import ReducedReference
 from apples.OptionsRun import options_config
 import multiprocessing as mp
-from apples.jutil import join_jplace, join_jplace_support
+from apples.jutil import join_jplace, join_jplace_support, join_jplace_support_all
 import sys
 import json
 from sys import platform as _platform
@@ -107,12 +107,26 @@ if __name__ == "__main__":
     if _platform == "win32" or _platform == "win64" or _platform == "msys":
         # if windows, multithreading is not supported until either
         # processes can be forked in windows or apples works with spawn.
-        results = list(map(lambda a: query_function(a[0], *a[1:]), queries))   # a.k.a starmap
+        results_combined = list(map(lambda a: query_function(a[0], *a[1:]), queries))   # a.k.a starmap
     else:
         pool = mp.Pool(options.num_thread)
-        results = pool.starmap(query_function, queries)
+        results_combined = pool.starmap(query_function, queries)
     logging.info(
         "[%s] Processed all queries in %.3f seconds." % (time.strftime("%H:%M:%S"), (time.time() - startq)))
+
+    results = []
+    valids = {}
+    if options.find_support:
+        if options.fast_support:
+            for result in results_combined:                
+                results.append(result[0])
+                valids[result[0][0]['placements'][0]['n'][0]] = result[1]
+        else:
+            for result in results_combined:                
+                results.append(result[0])
+                valids[result[0]['placements'][0]['n'][0]] = result[1]
+    else:
+        results = [rc[0] for rc in results_combined]
 
     if not options.find_support:
         result = join_jplace(results)
@@ -121,7 +135,7 @@ if __name__ == "__main__":
             results = Bootstrapping.perform_slow_bootstrapping(orig_tree_fp, reference.refs, query_dict, 
                                     options.sample_count, len(reference.representatives[0][0]), results, 
                                     os.path.abspath(__file__), options)
-        result = join_jplace_support(results)
+        result = join_jplace_support_all(results, valids, options.keep_factor, options.keep_at_most, options.prioritize_lse)                                    
 
     result["tree"] = extended_newick_string
     result["metadata"] = {"invocation": " ".join(sys.argv)}

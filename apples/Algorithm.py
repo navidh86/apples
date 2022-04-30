@@ -28,9 +28,10 @@ class Algorithm(ABC):
     def error_per_edge(edge):
         pass
 
-    def placement(self, selection_name):
+    def placement(self, selection_name, get_valids=False):
 
         valids = filter(lambda x: x.valid, self.subtree.traverse_postorder())
+        valids_list = list(filter(lambda x: x.valid, self.subtree.traverse_postorder()))
 
         if selection_name == "HYBRID":
             sm = heapq.nsmallest(math.floor(math.log2(self.subtree.num_nodes)),
@@ -54,5 +55,15 @@ class Algorithm(ABC):
             potential_misplacement_flag = 1
         else:
             potential_misplacement_flag = 0
+
+        # process valids
+        if get_valids:
+            valids2 = []
+            for valid in valids_list:
+                valids2.append([valid.edge_index, self.error_per_edge(valid), 1, valid.edge_length - valid.x_2, valid.x_1])
+            
+            return ([placed_edge.edge_index, e_per_edge,
+                1, placed_edge.edge_length - relative_distal, pendant], potential_misplacement_flag, valids2)
+
         return ([placed_edge.edge_index, e_per_edge,
                 1, placed_edge.edge_length - relative_distal, pendant], potential_misplacement_flag)
