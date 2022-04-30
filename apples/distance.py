@@ -87,11 +87,11 @@ def jc69(a2, b2, overlap_frac):
         else:
             return -0.75 * np.log(loc)
 
-def jc69_support(a2, b2, boot):    
+def jc69_support(a2, b2, overlap_frac, boot):    
     nondash = np.logical_and(a2 != b'-', b2 != b'-')
     valid = np.dot(boot, nondash)
     prop = valid / len(a2)
-    validdist = prop >= 0.001
+    validdist = prop >= overlap_frac
     valid[~validdist] = len(a2)
     p = np.dot(boot, np.logical_and(a2 != b2, nondash)) * 1.0 / valid
     p[p < np.finfo(float).eps] = 0

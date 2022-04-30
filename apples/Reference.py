@@ -100,14 +100,14 @@ class ReducedReference(Reference):
         #    print(k+"\t"+str(v))
         return obs_dist
 
-    def get_obs_dist_support(self, query_seq, query_tag):
+    def get_obs_dist_support(self, query_seq, query_tag, overlap_frac, protein_seqs):
         obs_dist = {}
         obs_num = 0
         representative_dists = [[] for x in range(Bootstrapping.sample_count+1)]
 
         for i, content in enumerate(self.representatives):
             consensus_seq, group = content  
-            dist = jc69_support(query_seq, consensus_seq, Bootstrapping.boot) # vector of distances
+            dist = jc69_support(query_seq, consensus_seq, overlap_frac, Bootstrapping.boot) # vector of distances
 
             for j in range(Bootstrapping.sample_count+1):
                 if dist[j] >= 0: # valid distance
@@ -123,7 +123,7 @@ class ReducedReference(Reference):
                 if head[0] <= self.threshold or obs_num < self.baseobs:
                     _, group = self.representatives[head[1]]
                     for thing in group:
-                        thing_d = jc69_support(query_seq, self.refs[thing], Bootstrapping.boot2[j])[0]
+                        thing_d = jc69_support(query_seq, self.refs[thing], overlap_frac, Bootstrapping.boot2[j])[0]
                         if not thing_d < 0:
                             obs_dist[thing] = thing_d
                             obs_num += 1
