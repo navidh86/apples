@@ -40,7 +40,9 @@ def options_config():
     parser.add_option("--keep-factor", dest="keep_factor", type=float, default=0.01,
                       help="throw away anything that has ml_ratio below keep_factor times (best ml_ratio).", metavar="NUMBER")                                                                    
     parser.add_option("--keep-at-most", dest="keep_at_most", type=int, default=5,
-                      help="maximum number of placements to be kept.", metavar="NUMBER")                                                                    
+                      help="maximum number of placements to be kept.", metavar="NUMBER") 
+    parser.add_option("--lse", dest="prioritize_lse", action='store_true', default=False,
+                      help="Only output the placement with the minimum lse.")                                                                                                        
 
     (options, args) = parser.parse()
 

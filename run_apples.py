@@ -135,10 +135,7 @@ if __name__ == "__main__":
             results = Bootstrapping.perform_slow_bootstrapping(orig_tree_fp, reference.refs, query_dict, 
                                     options.sample_count, len(reference.representatives[0][0]), results, 
                                     os.path.abspath(__file__), options)
-        #     result = join_jplace_support(results)
-        # else:
-        result = join_jplace_support_all(results, valids, options.keep_factor, options.keep_at_most)                                    
-        # result = join_jplace_support(results)
+        result = join_jplace_support_all(results, valids, options.keep_factor, options.keep_at_most, options.prioritize_lse)                                    
 
     result["tree"] = extended_newick_string
     result["metadata"] = {"invocation": " ".join(sys.argv)}

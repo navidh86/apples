@@ -26,9 +26,9 @@ def join_jplace_support(lst):
                 result["placements"] = result["placements"] + lst[i][0]["placements"]
     return result
 
-def join_jplace_support_all(lst, valids, keep_factor, keep_at_most):
+def join_jplace_support_all(lst, valids, keep_factor, keep_at_most, prioritize_lse):
     support = get_support_all(lst)
-    update_valids(valids, support, keep_factor, keep_at_most)
+    update_valids(valids, support, keep_factor, keep_at_most, prioritize_lse)
     result = {}
     result["placements"] = []
     for i in range(len(lst)):
@@ -39,7 +39,7 @@ def join_jplace_support_all(lst, valids, keep_factor, keep_at_most):
         result["placements"].append(temp)
     return result
 
-def update_valids(valids, support, keep_factor, keep_at_most):
+def update_valids(valids, support, keep_factor, keep_at_most, prioritize_lse):
     for query, placements in valids.items():
         for p in placements:
             if p[0] in support[query]:
@@ -47,16 +47,20 @@ def update_valids(valids, support, keep_factor, keep_at_most):
             else:
                 p[2] = 0
 
-        # sort according to support, then LSE
-        placements.sort(key=lambda x: (-x[2], x[1])) # descending by support, ascending by LSE
+        if prioritize_lse:
+            # only take the placement with minimum LSE
+            placements = [min(placements, key=lambda x: x[1])]
+        else:
+            # sort according to support, then LSE
+            placements.sort(key=lambda x: (-x[2], x[1])) # descending by support, ascending by LSE
 
-        # filter out anything with support < keep_factor * highest support
-        threshold = keep_factor * placements[0][2]
-        placements = list(filter(lambda x: x[2] >= threshold, placements))
+            # filter out anything with support < keep_factor * highest support
+            threshold = keep_factor * placements[0][2]
+            placements = list(filter(lambda x: x[2] >= threshold, placements))
 
-        # cut lenght of list to at most keep_at_most
-        if len(placements) > keep_at_most:
-            placements = placements[:keep_at_most]
+            # cut length of list to at most keep_at_most
+            if len(placements) > keep_at_most:
+                placements = placements[:keep_at_most]
 
         valids[query] = placements
 
