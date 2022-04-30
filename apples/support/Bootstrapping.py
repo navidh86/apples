@@ -75,9 +75,16 @@ class Bootstrapping:
             out_fp.close()
 
             # Run APPLES on the sampled query and ref alignments
-            sp.run(['python3', execpath, '-t', tree_fp, '-q', query_fp.name, '-s', ref_fp.name, '-o', out_fp.name, 
-                    '-b', str(options.base_observation_threshold), '-f', str(options.filt_threshold)], 
-                    stdout=sp.DEVNULL, stderr=sp.STDOUT)
+            command = ['python3', execpath, '-t', tree_fp, '-q', query_fp.name, '-s', ref_fp.name, '-o', out_fp.name, '-T', str(options.num_thread),
+                    '-b', str(options.base_observation_threshold), '-f', str(options.filt_threshold), '-V', str(options.minimum_alignment_overlap)]
+            if options.mask_lowconfidence:
+                command.append('-X')
+            if options.exclude_intplace:
+                command.append('--exclude')
+            if options.protein_seqs:
+                command.append('-p')
+            
+            sp.run(command, stdout=sp.DEVNULL, stderr=sp.STDOUT)
 
             fp = open(out_fp.name)
             jp = fp.read()
