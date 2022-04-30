@@ -105,7 +105,8 @@ class PoolQueryWorker:
         jplace = dict()
         
         start_dist = time.time()
-        obs_dist = cls.reference.get_obs_dist_support(query_seq, query_name)
+        obs_dist = cls.reference.get_obs_dist_support(query_seq, query_name, cls.options.minimum_alignment_overlap,
+                                                        cls.options.protein_seqs)
         end_dist = time.time() - start_dist
 
         for j, od in enumerate(obs_dist):
