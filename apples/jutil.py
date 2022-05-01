@@ -31,12 +31,14 @@ def join_jplace_support_all(lst, valids, keep_factor, keep_at_most, prioritize_l
     update_valids(valids, support, keep_factor, keep_at_most, prioritize_lse)
     result = {}
     result["placements"] = []
-    for i in range(len(lst)):
+    for query in lst:
         temp = {}
-        query_name = lst[i][0]["placements"][0]["n"][0]
-        temp["n"] = [query_name]
-        temp["p"] = valids[query_name]
-        result["placements"].append(temp)
+        temp["n"] = [query]
+        temp["p"] = valids[query]
+
+        # only append if there is any valid placement
+        if len(temp["p"]) > 0:
+            result["placements"].append(temp)
     return result
 
 def update_valids(valids, support, keep_factor, keep_at_most, prioritize_lse):
@@ -64,6 +66,8 @@ def update_valids(valids, support, keep_factor, keep_at_most, prioritize_lse):
 
         valids[query] = placements
 
+        # cut out -1 branches
+        valids[query] = list(filter(lambda x: x[0] != -1, valids[query]))
 
 
 def extended_newick(tree):

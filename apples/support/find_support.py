@@ -31,22 +31,23 @@ def get_support(results):
 
 def get_support_all(results):
     support = {}
-    for result in results:
-        query = result[0]["placements"][0]["n"][0]
+    for query in results:
         count = {}
-        count['total'] = 0
+        result = results[query]
         for i in range(1, Bootstrapping.sample_count+1):
-            branch = result[i]["placements"][0]["p"][0][0]
-            if branch not in count:
-                count[branch] = 0
+            if i in result:
+                branch = result[i][0]
+            else:
+                branch = -1
 
-            count[branch] += 1
-            count['total'] += 1
+            if branch != -1:
+                if branch not in count:
+                    count[branch] = 0
+                count[branch] += 1
         
         temp = {}
         for branch in count:
-            if branch != 'total':
-                temp[branch] = count[branch]/count['total']
+            temp[branch] = count[branch]/Bootstrapping.sample_count
                 
         support[query] = temp
 

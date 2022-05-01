@@ -35,17 +35,11 @@ class Bootstrapping:
     @classmethod
     def perform_slow_bootstrapping(cls, tree_fp, refs, queries, sample_count, sequence_length, 
                                 old_results, execpath, options):
-        results = []
+        results = {}
         for result in old_results:
-            results.append({0: result})
-
-        # refs = {}
-        # for ref in old_refs:
-        #     refs[ref] = old_refs[ref].tostring().decode('utf-8')
-        
-        # queries = {}
-        # for query in old_queries:
-        #     queries[query] = old_queries[query].tostring().decode('utf-8')
+            query = result['placements'][0]['n'][0]
+            results[query] = {}
+            results[query][0] = result['placements'][0]['p'][0]
 
         for i in range(sample_count):
             print("Bootstrap sample: " + str(i+1))
@@ -91,9 +85,10 @@ class Bootstrapping:
             fp.close()
             jp = json.loads(jp)
 
-            for idx, placement in enumerate(jp["placements"]):
-                ar = [placement]
-                results[idx][i+1] = {"placements": ar}
+            for placement in jp["placements"]:
+                query = placement['n'][0]
+                if placement['p'][0][0] != -1:
+                    results[query][i+1] = placement['p'][0]
 
             os.remove(ref_fp.name)
             os.remove(query_fp.name)
