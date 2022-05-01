@@ -86,7 +86,7 @@ class PoolQueryWorker:
         if potential_misplacement_flag == 1:
             if cls.options.exclude_intplace:
                 jplace["placements"][0]["p"][0][0] = -1
-                valids = [jplace["placements"][0]["p"][0][0]]
+                valids = [jplace["placements"][0]["p"][0]]
                 ignoredprompt = " Consequently, this sequence is ignored (no output)."
             else:
                 ignoredprompt = ""
@@ -116,12 +116,11 @@ class PoolQueryWorker:
         valids = []
 
         for j, od in enumerate(obs_dist):
-            jplace[j] = {}
-            jplace[j]["placements"] = [{"p": [[0, 0, 1, 0, 0]], "n": [query_name]}]
+            jplace[j] = [0, 0, 1, 0, 0]
 
             if len(od) <= 2:
                 start_dp = time.time()
-                jplace[j]["placements"][0]["p"][0][0] = -1
+                jplace[j][0] = -1
                 end_dp = time.time() - start_dp
 
                 if j == 0:
@@ -135,19 +134,19 @@ class PoolQueryWorker:
                         (time.strftime("%H:%M:%S"), query_name, end_dist,
                         time.strftime("%H:%M:%S"), query_name, end_dp))
                     
-                    valids = [jplace[j]["placements"][0]["p"][0]]
+                    valids = [jplace[j]]
                 continue
 
             start_dp = time.time()
             placement_flag = False
             for k, v in od.items():
                 if v == 0 and k != query_name:
-                    jplace[j]["placements"][0]["p"][0][0] = cls.name_to_node_map[k].edge_index
+                    jplace[j][0] = cls.name_to_node_map[k].edge_index
                     placement_flag = True
                     break
             if placement_flag:
                 if j == 0:
-                    valids = [jplace[j]["placements"][0]["p"][0]]
+                    valids = [jplace[j]]
                 continue
 
             subtree = Subtree(od, cls.name_to_node_map)
@@ -169,11 +168,11 @@ class PoolQueryWorker:
             else:
                 presult, potential_misplacement_flag = alg.placement(cls.options.criterion_name, False)
 
-            jplace[j]["placements"][0]["p"] = [presult]
+            jplace[j] = presult
             if potential_misplacement_flag == 1 and j == 0:
                 if cls.options.exclude_intplace:
-                    jplace[j]["placements"][0]["p"][0][0] = -1
-                    valids = [jplace[j]["placements"][0]["p"][0][0]]
+                    jplace[j][0] = -1
+                    valids = [jplace[j]]
                     ignoredprompt = " Consequently, this sequence is ignored (no output)."
                 else:
                     ignoredprompt = ""
@@ -191,4 +190,4 @@ class PoolQueryWorker:
                     (time.strftime("%H:%M:%S"), query_name, end_dist,
                     time.strftime("%H:%M:%S"), query_name, end_dp))
 
-        return jplace, valids
+        return query_name, jplace, valids

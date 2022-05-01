@@ -114,13 +114,13 @@ if __name__ == "__main__":
     logging.info(
         "[%s] Processed all queries in %.3f seconds." % (time.strftime("%H:%M:%S"), (time.time() - startq)))
 
-    results = []
+    results = {}
     valids = {}
     if options.find_support:
         if options.fast_support:
             for result in results_combined:                
-                results.append(result[0])
-                valids[result[0][0]['placements'][0]['n'][0]] = result[1]
+                results[result[0]] = result[1]
+                valids[result[0]] = result[2]
         else:
             for result in results_combined:                
                 results.append(result[0])
