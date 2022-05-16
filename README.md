@@ -12,6 +12,9 @@ Publication
 ------------------------------------
 
 * Metin Balaban, Shahab Sarmashghi, and Siavash Mirarab. “APPLES: Scalable Distance-Based Phylogenetic Placement with or without Alignments.” Systematic Biology 69, no. 3 (2020): 566–78. [https://doi.org/10.1093/sysbio/syz063](https://doi.org/10.1093/sysbio/syz063)
+* Hasan, N.B., Biswas, A., Balaban, M., Mirarab, S., Bayzid, M.S. (2022). Fast and Accurate Branch Support Calculation for Distance-Based Phylogenetic Placements. In: Jin, L., Durand, D. (eds) Comparative Genomics. RECOMB-CG 2022. Lecture Notes in Computer Science(), vol 13234. Springer, Cham. 
+https://doi.org/10.1007/978-3-031-06220-9_3
+
 
 
 ------------------------------------
