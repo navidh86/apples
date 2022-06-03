@@ -122,6 +122,7 @@ if __name__ == "__main__":
                 results[result[0]] = result[1]
                 valids[result[0]] = result[2]
         else:
+            results = []
             for result in results_combined:                
                 results.append(result[0])
                 valids[result[0]['placements'][0]['n'][0]] = result[1]
