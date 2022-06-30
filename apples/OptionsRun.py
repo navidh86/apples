@@ -71,8 +71,8 @@ def options_config():
         logging.warning("To find support, input should be an alignment.")
 
     if options.find_support:
-        if not options.fast_support and options.disable_reestimation:
-            options.fast_support = True
+        # if not options.fast_support and options.disable_reestimation:
+        #     options.fast_support = True
 
         if options.sample_count <= 0:
             raise ValueError('Sample count has to be a positive integer.')
