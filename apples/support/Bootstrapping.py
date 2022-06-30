@@ -77,6 +77,8 @@ class Bootstrapping:
                 command.append('--exclude')
             if options.protein_seqs:
                 command.append('-p')
+            if options.disable_reestimation:
+                command.append('-D')
             
             sp.run(command, stdout=sp.DEVNULL, stderr=sp.STDOUT)
 
