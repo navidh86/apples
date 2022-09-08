@@ -63,7 +63,7 @@ if __name__ == "__main__":
         if options.ref_fp:
             start = time.time()
             weighted_flag = True
-            load_weights = False
+            load_weights = True
             reference = ReducedReference(options.ref_fp, options.protein_seqs, options.tree_fp,
                                          options.filt_threshold, options.num_thread, weighted_flag)
             logging.info(
@@ -84,7 +84,9 @@ if __name__ == "__main__":
                 weights = get_weights_slow(reference, first_read_tree, options)
             else:
                 # load from file
-                weights = None
+                filename = "weights.txt"
+                weights = open(filename, "r").read().split(" ")
+                weights = [float(w) for w in weights]
         else:
             weights = None
         reference.set_weights(weights)
