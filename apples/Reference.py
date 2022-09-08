@@ -15,12 +15,15 @@ from apples.support.Bootstrapping import Bootstrapping
 class Reference(ABC):
     """prot flag true if protein sequences, false for nucleotide sequences"""
 
-    def __init__(self, ref_fp: str, prot_flag: bool):
+    def __init__(self, ref_fp: str, prot_flag: bool, weighted_flag: bool):
         self.refs = fasta2dic(ref_fp, prot_flag, False)  # never mask low confidence bases in the reference
         self.prot_flag = prot_flag
+        self.weighted_flag = weighted_flag
 
         if prot_flag:
             self.dist_function = scoredist
+        elif self.weighted_flag:            
+            self.dist_function = jc69_weighted
         else:
             self.dist_function = jc69
 
@@ -41,8 +44,8 @@ class FullReference(Reference):
 
 
 class ReducedReference(Reference):
-    def __init__(self, ref_fp, prot_flag, tree_file, threshold, num_thread):
-        Reference.__init__(self, ref_fp, prot_flag)
+    def __init__(self, ref_fp, prot_flag, tree_file, threshold, num_thread, weighted_flag):
+        Reference.__init__(self, ref_fp, prot_flag, weighted_flag)
         self.threshold = threshold
 
         start = time.time()
@@ -75,13 +78,21 @@ class ReducedReference(Reference):
     def set_baseobs(self, baseobs):
         self.baseobs = baseobs
 
+    def set_weights(self, weights):
+        self.weights = weights
+
+    def dist_function_caller(self, a2, b2, weights, overlap_frac):
+        if self.weighted_flag:
+            return self.dist_function(a2, b2, weights, overlap_frac)
+        return self.dist_function(a2, b2, overlap_frac)
+
     def get_obs_dist(self, query_seq, query_tag, overlap_frac):
         obs_dist = {}
         obs_num = 0
         representative_dists = []
         for i, content in enumerate(self.representatives):
             consensus_seq, group = content
-            dist = self.dist_function(query_seq, consensus_seq, overlap_frac)
+            dist = self.dist_function_caller(query_seq, consensus_seq, self.weights, overlap_frac)
             if dist >= 0:  # valid distance
                 representative_dists.append((dist, i))
         heapq.heapify(representative_dists)
@@ -90,7 +101,7 @@ class ReducedReference(Reference):
             if head[0] <= self.threshold or obs_num < self.baseobs:
                 _, group = self.representatives[head[1]]
                 for thing in group:
-                    thing_d = self.dist_function(query_seq, self.refs[thing], overlap_frac)
+                    thing_d = self.dist_function_caller(query_seq, self.refs[thing], self.weights, overlap_frac)
                     if not thing_d < 0:
                         obs_dist[thing] = thing_d
                         obs_num += 1

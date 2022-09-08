@@ -102,3 +102,23 @@ def jc69_support(a2, b2, overlap_frac, boot):
     res[~validdist] = -1.0
     
     return res
+
+def jc69_weighted(a2, b2, weights, overlap_frac):
+    nondash = np.logical_and(a2 != b'-', b2 != b'-')
+    valid = np.count_nonzero(nondash)
+    if not valid or valid / len(nondash) < overlap_frac:
+        return -1.0  # treat as missing data
+
+    # weighted distance
+    weights = np.array(weights)
+    weighted_valid = np.dot(nondash, weights)
+    p = np.dot(np.logical_and(a2 != b2, nondash), weights) * 1.0 / weighted_valid
+    
+    if (p - np.finfo(float).eps < 0):
+        return 0.0
+    else:
+        loc = 1 - (4 * p / 3)
+        if 0 >= loc:
+            return -1.0  # treat as missing data
+        else:
+            return -0.75 * np.log(loc)
