@@ -41,7 +41,7 @@ def get_weights(reference, tree, options):
     # get the dist matrix from tree
     t_dist = tree.distance_matrix(True)
     refs = reference.refs
-    L = len(list(reference.refs.items())[0][1])
+    L = len(list(refs.items())[0][1])
 
     w = np.zeros(L)
     denom = np.ones(L)
@@ -50,15 +50,13 @@ def get_weights(reference, tree, options):
     for i, ref in enumerate(refs):
         a2 = refs[ref]
         for j, ref2 in enumerate(refs):
-            b2 = refs[ref2]
-            nondash = np.logical_and(a2 != b'-', b2 != b'-')
-            hh = np.logical_and(a2 != b2, nondash)
-            if ref != ref2:
+            if j > i:
+                b2 = refs[ref2]
+                nondash = np.logical_and(a2 != b'-', b2 != b'-')
+                hh = np.logical_and(a2 != b2, nondash)
                 tt = jc_inverse(t_dist[ref][ref2])
-            else:
-                tt = 0
-            num += tt * hh
-            denom += hh
+                num += tt * hh
+                denom += hh
 
     w = num / denom  
     w /= np.sum(w)
