@@ -16,7 +16,7 @@ import logging
 import pickle
 
 from apples.support.Bootstrapping import Bootstrapping
-from apples.weight import get_weights, get_weights_slow
+from apples.weight import get_weights
 import numpy as np
 import os.path
 
@@ -62,10 +62,8 @@ if __name__ == "__main__":
     else:
         if options.ref_fp:
             start = time.time()
-            weighted_flag = True
-            load_weights = True
             reference = ReducedReference(options.ref_fp, options.protein_seqs, options.tree_fp,
-                                         options.filt_threshold, options.num_thread, weighted_flag)
+                                         options.filt_threshold, options.num_thread, options.weighted)
             logging.info(
                 "[%s] Reduced reference is computed in %.3f seconds." % (
                     time.strftime("%H:%M:%S"), (time.time() - start)))
@@ -79,13 +77,12 @@ if __name__ == "__main__":
 
         reference.set_baseobs(options.base_observation_threshold)
         
-        if weighted_flag:
-            if not load_weights:
-                weights = get_weights_slow(reference, first_read_tree, options)
+        if options.weighted:
+            if not options.weight_input_fp:
+                weights = get_weights(reference, first_read_tree, options)
             else:
                 # load from file
-                filename = "weights.txt"
-                weights = open(filename, "r").read().split(" ")
+                weights = open(options.weight_input_fp, "r").read().split(" ")
                 weights = [float(w) for w in weights]
         else:
             weights = None

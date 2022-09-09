@@ -42,7 +42,13 @@ def options_config():
     parser.add_option("--keep-at-most", dest="keep_at_most", type=int, default=5,
                       help="maximum number of placements to be kept.", metavar="NUMBER") 
     parser.add_option("--lse", dest="prioritize_lse", action='store_true', default=False,
-                      help="Only output the placement with the minimum lse.")                                                                                                        
+                      help="Only output the placement with the minimum lse.")
+    parser.add_option("-W", "--weighted", dest="weighted", action="store_true", default=False,
+                      help="Use weighted sites for placement.")  
+    parser.add_option("--weight-output", dest="weight_output_fp",
+                      help="Path for the output weight file", metavar="FILE")
+    parser.add_option("--weight-input", dest="weight_input_fp",
+                      help="Path for the input weight file", metavar="FILE")                                                                                                                                    
 
     (options, args) = parser.parse()
 
@@ -78,5 +84,10 @@ def options_config():
             raise ValueError('Sample count has to be a positive integer.')
     else:
         options.fast_support = False
+
+
+    if not options.weighted:
+        if options.weight_output_fp or options.weight_input_fp:
+            raise ValueError("Weighted mode not selected.")
 
     return options, args
