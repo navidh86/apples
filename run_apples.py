@@ -16,7 +16,7 @@ import logging
 import pickle
 
 from apples.support.Bootstrapping import Bootstrapping
-from apples.weight import get_weights
+from apples.weight import get_weights, get_weights_all
 import numpy as np
 import os.path
 
@@ -80,6 +80,7 @@ if __name__ == "__main__":
         if options.weighted:
             if not options.weight_input_fp:
                 weights = get_weights(reference, first_read_tree, options)
+                # weights = get_weights_all(reference, first_read_tree, options)
             else:
                 # load from file
                 weights = open(options.weight_input_fp, "r").read().split(" ")
