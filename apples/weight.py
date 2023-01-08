@@ -3,7 +3,7 @@ from math import exp
 import numpy as np
 import multiprocessing as mp
 from sys import platform as _platform
-from sklearn.linear_model import LinearRegression
+# from sklearn.linear_model import LinearRegression
 
 def jc_inverse(d):
     return 0.75 * (1 - exp(-4.0*d/3))
@@ -103,7 +103,7 @@ def get_weights(reference, tree, options):
         denom += c[1]
 
     w = num / denom
-    w /= np.sum(w)
+    # w /= np.sum(w)
     
     print("Weights calculated.")
 
@@ -119,7 +119,7 @@ def get_weights(reference, tree, options):
 def optimization_results(refs, t_dist, w):
     print("Before and after...")
     total_before = 0; total_after = 0
-    w_b = np.ones(len(w)) / len(w)
+    w_b = np.ones(len(w))#/ len(w)
     for i, ref in enumerate(refs):
         a2 = refs[ref]
         for j, ref2 in enumerate(refs):
@@ -135,7 +135,7 @@ def optimization_results(refs, t_dist, w):
 
     print(total_before, total_after)
     print("Decrease = ", (total_before-total_after)*100.0/total_before, "percent")
-    exit(0)
+    # exit(0)
 
 
 # def get_weights_old(reference, tree, options):
