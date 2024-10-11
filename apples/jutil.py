@@ -2,14 +2,23 @@ from numpy import pad
 from apples.support.find_support import get_support, get_support_all
 
 def join_jplace(lst):
+    """
+    Join the list of jplace files into a single jplace file.
+
+    Parameters:
+    lst (list): A list of jplace files.
+
+    Returns:
+    dict: The joined jplace dictionary.
+    """
     result = lst[0]
     if len(lst) == 1:
-        if result["placements"][0]["p"][0][0] == -1:
-            result["placements"] = []
+        if result['placements'][0]['p'][0][0] == -1:
+            result['placements'] = []
     else:
-        for i in range(1,len(lst)):
-            if lst[i]["placements"][0]["p"][0][0] != -1:
-                result["placements"] = result["placements"] + lst[i]["placements"]
+        for i in range(1, len(lst)):
+            if lst[i]['placements'][0]['p'][0][0] != -1:
+                result['placements'] = result['placements'] + lst[i]['placements']
     return result
 
 def join_jplace_support(lst):
@@ -23,10 +32,19 @@ def join_jplace_support(lst):
         for i in range(1, len(lst)):
             if lst[i][0]["placements"][0]["p"][0][0] != -1:
                 lst[i][0]["placements"][0]["p"][0][2] = support[i]
-                result["placements"] = result["placements"] + lst[i][0]["placements"]
+                result["placements"] += lst[i][0]["placements"]
     return result
 
 def join_jplace_support_all(lst, valids, keep_factor, keep_at_most, prioritize_lse):
+    """
+    Join the list of jplace files into a single jplace file. Include support values of all placements too.
+
+    Parameters:
+    lst (list): A list of jplace files.
+
+    Returns:
+    dict: The joined jplace dictionary.
+    """
     support = get_support_all(lst)
     update_valids(valids, support, keep_factor, keep_at_most, prioritize_lse)
     result = {}
@@ -42,6 +60,9 @@ def join_jplace_support_all(lst, valids, keep_factor, keep_at_most, prioritize_l
     return result
 
 def update_valids(valids, support, keep_factor, keep_at_most, prioritize_lse):
+    """
+    Comment required
+    """
     for query, placements in valids.items():
         for p in placements:
             if p[0] in support[query]:
@@ -69,9 +90,20 @@ def update_valids(valids, support, keep_factor, keep_at_most, prioritize_lse):
         # cut out -1 branches
         valids[query] = list(filter(lambda x: x[0] != -1, valids[query]))
 
-
 def extended_newick(tree):
-    """Newick printing algorithm is based on treeswift"""
+    """
+    Generate an extended Newick string representation of a tree using treeswift.
+
+    This function prepares a suffix as an empty string and uses the recursive helper function _nodeprint
+    to create a string representation of the tree with edge indices. It returns the Newick string
+    along with additional formatting to denote if the tree is rooted.
+
+    Args:
+        tree: A Tree object to be converted into an extended Newick format.
+
+    Returns:
+        str: An extended Newick string representation of the tree.
+"""
 
     # if tree.root.edge_length is None:
     #     suffix = ''
@@ -90,6 +122,20 @@ def extended_newick(tree):
 
 
 def _nodeprint(root):
+    """
+    Generate a string representation of a tree from its root node.
+    This code defines a function _nodeprint that takes a root node and
+    returns a dictionary node_to_str containing string representations of
+    nodes in a tree. It uses postorder traversal to process each node and its
+    children, and constructs a string representation for each node based on
+    its label, edge length, and **edge index**.
+
+    Args:
+        root: The root node of the tree.
+
+    Returns:
+        A string representation of the tree.
+    """
     node_to_str = dict()
 
     for node in root.traverse_postorder():

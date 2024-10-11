@@ -21,12 +21,7 @@ def get_support(results):
             support.append(0)
         else:
             support.append(count[query][original_branch]/count[query]['total'])
-
-    # fp = open("placement_count.txt", "w")
-    # output = json.dumps(count)
-    # fp.write(output)
-    # fp.close()
-
+            
     return support
 
 def get_support_all(results):
@@ -37,13 +32,11 @@ def get_support_all(results):
         for i in range(1, Bootstrapping.sample_count+1):
             if i in result:
                 branch = result[i][0]
-            else:
-                branch = -1
-
-            if branch != -1:
                 if branch not in count:
                     count[branch] = 0
                 count[branch] += 1
+            else:
+                branch = -1                
         
         temp = {}
         for branch in count:
