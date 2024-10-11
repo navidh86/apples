@@ -4,7 +4,7 @@ import tempfile
 from abc import ABC, abstractmethod
 
 from apples.PoolRepresentativeWorker import PoolRepresentativeWorker
-from apples.distance import scoredist, jc69
+from apples.distance import scoredist, jc69, jc69_support
 from apples.fasta2dic import fasta2dic
 import heapq
 import time

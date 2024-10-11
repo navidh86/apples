@@ -744,7 +744,25 @@ def jc69(a2, b2, overlap_frac):
         else:
             return -0.75 * np.log(loc)
 
-def jc69_support(a2, b2, overlap_frac, boot):    
+def jc69_support(a2, b2, overlap_frac, boot):
+    """
+    This code defines a function jc69 that takes four input parameters a2, b2, and overlap_frac, boot.
+    The last parameter, boot is a boostrapping matrix, with dimension B*N; B being the number of bootstrapping replicates and N the sequence length of the MSA. 
+    
+    Each row contains a series of integers indicating how many times each of site was sampled for that particular bootstrap replicate.
+
+    It calculates B (# of bootstrap replicates) Jukes-Cantor 69 (JC69) distances based on the input sequences a2 and b2.
+    If the sequences do not have enough valid data or if the calculated distance is not within certain bounds,
+    the function returns specific values to indicate missing data or a distance of 0.
+
+    Parameters:
+    a2 (array-like): First sequence.
+    b2 (array-like): Second sequence.
+    overlap_frac (float): Minimum overlap fraction required for valid comparison.
+
+    Returns:
+    list of floats: B JC69 distances between the two sequences.
+    """   
     nondash = np.logical_and(a2 != b'-', b2 != b'-')
     valid = np.dot(boot, nondash)
     prop = valid / len(a2)
