@@ -102,6 +102,7 @@ if __name__ == "__main__":
 
     if options.find_support:
         Bootstrapping.sample_count = options.sample_count
+        Bootstrapping.seed = options.bootstrapping_seed
 
     if not options.fast_support:
         query_function = queryworker.runquery

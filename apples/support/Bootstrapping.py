@@ -11,10 +11,12 @@ class Bootstrapping:
     boot2 = [] # 3d version of the same matrix
     sample_count = 0
     sequence_length = 0
-    np.random.seed(56)
+    seed = 56
 
     @classmethod
     def get_boot_matrix(cls, sample_count, sequence_length):
+        np.random.seed(Bootstrapping.seed)
+
         # create bootstrap matrix
         mat = np.random.choice(sequence_length, (sample_count, sequence_length), replace=True)
 

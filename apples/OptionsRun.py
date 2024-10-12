@@ -87,7 +87,9 @@ def options_config():
     parser.add_option("-F", "--fast", dest="fast_support", action='store_true', default=False,
                       help="enables fast bootstrapping (True by default if reestimation is turned off).")                    
     parser.add_option("-N", "--sample", dest="sample_count", type=int, default=100,
-                      help="number of bootstrapping samples.", metavar="NUMBER") 
+                      help="number of bootstrapping samples.", metavar="NUMBER")
+    parser.add_option("--seed", dest="bootstrapping_seed", type=int, default=56,
+                      help="seed for bootstrapping.", metavar="NUMBER") 
     parser.add_option("--keep-factor", dest="keep_factor", type=float, default=0.01,
                       help="throw away anything that has ml_ratio below keep_factor times (best ml_ratio).", metavar="NUMBER")                                                                    
     parser.add_option("--keep-at-most", dest="keep_at_most", type=int, default=5,
